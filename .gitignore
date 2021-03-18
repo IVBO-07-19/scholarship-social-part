@@ -1,0 +1,9 @@
+.git
+.idea
+/templates
+/META
+/static
+.env
+Lib/
+Scripts/
+__pycache__/
