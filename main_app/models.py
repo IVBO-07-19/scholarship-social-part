@@ -2,6 +2,9 @@ from django.db import models
 
 
 class BaseReport(models.Model):
+    class Meta:
+        abstract = True
+
     title = models.CharField(max_length=255, verbose_name='Название мероприятия')
     work = models.TextField(verbose_name='Выполненные работы по мероприятию')
 
@@ -10,6 +13,9 @@ class BaseReport(models.Model):
 
 
 class BaseApp(models.Model):
+    class Meta:
+        abstract = True
+
     # owner=User
     # responsible=User
     responsible = models.CharField(max_length=255,
@@ -99,7 +105,7 @@ class ArticleReport(models.Model):
         ('university', 'университетский'),
         ('municipal', 'городской'),
     )
-    edition_level_choicer = models.CharField(max_length=255,verbose_name='Уровень издания', choices=EDITION_LEVEL)
+    edition_level_choicer = models.CharField(max_length=255, verbose_name='Уровень издания', choices=EDITION_LEVEL)
     co_author_quantity = models.PositiveSmallIntegerField(verbose_name='Количество соавторов', default=0)
     date = models.DateField(verbose_name='Дата публикации')
 
