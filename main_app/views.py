@@ -166,6 +166,7 @@ class ListArticleView(generics.ListAPIView):
     queryset = ArticleApp.objects.all()
     serializer_class = ArticleSerializer
 
+
 #
 # class CreateView(APIView):
 #     def create_onetime(self, request):
@@ -268,3 +269,8 @@ class ListArticleView(generics.ListAPIView):
 #              'info': InformationSupportApp,
 #              'article': ArticleApp}
 #         d.get(category)().objects.all()
+
+class Kek(APIView):
+    def get(self, request):
+        print(request.user)
+        return Response(status=200)

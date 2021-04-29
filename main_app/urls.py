@@ -3,7 +3,6 @@ from django.urls import path, include
 
 from main_app.views import *
 
-
 urlpatterns = [
     path('onetime/create/', CreateOneTimeView.as_view()),
     path('onetime/<int:pk>/', OneTimeView.as_view()),
