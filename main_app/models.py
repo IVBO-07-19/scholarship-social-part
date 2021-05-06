@@ -4,10 +4,10 @@ from django.db import models
 User = get_user_model()
 
 
-class Approvation(models.Model):
-    judge = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True, verbose_name='Дата оценивания')
-    opinion_score = models.SmallIntegerField(verbose_name='Субъективная оценка')
+# class Approvation(models.Model):
+#     judge = models.ForeignKey(User, on_delete=models.CASCADE)
+#     date = models.DateField(auto_now_add=True, verbose_name='Дата оценивания')
+#     opinion_score = models.SmallIntegerField(verbose_name='Субъективная оценка')
 
 
 class BaseReport(models.Model):

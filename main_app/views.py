@@ -93,6 +93,13 @@ class RateOneTimeView(APIView):
 
     def put(self, request, pk):
         a = OneTimeParticipationApp.objects.get(pk=pk)
+        try:
+            a.scores = request.data['scores']
+        except KeyError:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        a.save()
+        serializer = OneTimeParticipationSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CreateSystematicView(APIView):
@@ -157,6 +164,20 @@ class ListOwnSystematicView(generics.ListAPIView):
         return super().list(request)
 
 
+class RateSystematicView(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, pk):
+        a = SystematicApp.objects.get(pk=pk)
+        try:
+            a.scores = request.data['scores']
+        except KeyError:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        a.save()
+        serializer = SystematicSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateVolunteerView(APIView):
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
@@ -219,6 +240,20 @@ class ListOwnVolunteerView(generics.ListAPIView):
         return super().list(request)
 
 
+class RateVolunteerView(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, pk):
+        a = VolunteerApp.objects.get(pk=pk)
+        try:
+            a.scores = request.data['scores']
+        except KeyError:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        a.save()
+        serializer = VolunteerSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateInformationSupportView(APIView):
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
@@ -273,6 +308,20 @@ class ListOwnInformationSupportView(generics.ListAPIView):
         return super().list(request)
 
 
+class RateInformationSupportView(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, pk):
+        a = InformationSupportApp.objects.get(pk=pk)
+        try:
+            a.scores = request.data['scores']
+        except KeyError:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        a.save()
+        serializer = InformationSupportSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateArticleView(APIView):
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
@@ -325,3 +374,17 @@ class ListOwnArticleView(generics.ListAPIView):
     def get(self, request):
         self.queryset = ArticleApp.objects.filter(owner=request.user).order_by('-id')
         return super().list(request)
+
+
+class RateArticleView(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, pk):
+        a = ArticleApp.objects.get(pk=pk)
+        try:
+            a.scores = request.data['scores']
+        except KeyError:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        a.save()
+        serializer = ArticleSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
