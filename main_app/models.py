@@ -1,4 +1,13 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+
+User = get_user_model()
+
+
+class Approvation(models.Model):
+    judge = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True, verbose_name='Дата оценивания')
+    opinion_score = models.SmallIntegerField(verbose_name='Субъективная оценка')
 
 
 class BaseReport(models.Model):
@@ -7,6 +16,7 @@ class BaseReport(models.Model):
 
     title = models.CharField(max_length=255, verbose_name='Название мероприятия')
     work = models.TextField(verbose_name='Выполненные работы по мероприятию')
+    central_service_id = models.IntegerField(verbose_name='Id центрального сервиса')
 
     def __str__(self):
         return f'{self.title} report'
@@ -16,10 +26,11 @@ class BaseApp(models.Model):
     class Meta:
         abstract = True
 
-    # owner=User
-    # responsible=User
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     responsible = models.CharField(max_length=255,
-                                   verbose_name='ФИО и должность лица, подтверждающего участие')  # В лучшем случае foreignkey, ссылающийся на дядю или тетю
+                                   verbose_name='ФИО и должность лица, подтверждающего участие')
+    scores = models.PositiveSmallIntegerField(verbose_name='Баллы', null=True, blank=True)
+    # approvation = models.ManyToManyField(Approvation, verbose_name='Проверено', blank=True)
 
 
 class OneTimeParticipationReport(BaseReport):
@@ -91,15 +102,14 @@ class InformationSupportReport(BaseReport):
 
 class InformationSupportApp(BaseApp):
     report = models.OneToOneField(InformationSupportReport, verbose_name='Отчёт', on_delete=models.CASCADE)
-    scores = models.PositiveSmallIntegerField(verbose_name='Баллы', null=True, blank=True)
 
     def __str__(self):
         return f'{self.report.title} app'
 
 
 class ArticleReport(models.Model):
-    # owner=User
     title = models.CharField(max_length=255, verbose_name='Название статьи')
+    central_service_id = models.IntegerField(verbose_name='Id центрального сервиса')
     media_title = models.CharField(max_length=255, verbose_name='Название источника СМИ')
     EDITION_LEVEL = (
         ('university', 'университетский'),
@@ -111,5 +121,6 @@ class ArticleReport(models.Model):
 
 
 class ArticleApp(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     report = models.OneToOneField(ArticleReport, verbose_name='Отчёт', on_delete=models.CASCADE)
     scores = models.PositiveSmallIntegerField(verbose_name='Баллы', null=True, blank=True)

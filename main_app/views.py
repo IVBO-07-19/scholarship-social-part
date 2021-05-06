@@ -1,3 +1,7 @@
+import datetime
+import json
+
+import requests
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -6,59 +10,131 @@ from rest_framework.response import Response
 from main_app.models import *
 from main_app.serializers import *
 
+from custom_user.permissions import *
+
+
+def get_id_and_status(token):
+    data = {'Authorization': token}
+    r = requests.get('http://127.0.0.1:8001/api/application/last/',
+                     headers=data)
+
+    return r
+
+
+class Test(APIView):
+    def get(self, request):
+        return Response(data=get_id_and_status(request.headers['Authorization']))
+
 
 class CreateOneTimeView(APIView):
     def post(self, request):
+        response = get_id_and_status(request.headers['Authorization'])
+        if response.status_code != 200:
+            return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(response.text)
+        if not data['status']:
+            return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
-            r = OneTimeParticipationReport.objects.create(
-                title=request.data['title'],
-                work=request.data['work'],
-                date=request.data['date']
-            )
-
-            a = OneTimeParticipationApp.objects.create(
-                responsible=request.data['responsible'],
-                report=r,
-                is_organizer=request.data['is_organizer'],
-                is_co_organizer=request.data['is_co_organizer'],
-                is_assistant=request.data['is_assistant']
-            )
+            title = request.data['title']
+            work = request.data['work']
+            date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
+            responsible = request.data['responsible']
+            is_organizer = bool(request.data['is_organizer'])
+            is_co_organizer = bool(request.data['is_co_organizer'])
+            is_assistant = bool(request.data['is_assistant'])
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
-        serializer = OneTimeParticipationSerializer(r, context={'request': request})
+        except ValueError:
+            return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        if is_organizer + is_co_organizer + is_assistant != 1:
+            return Response('fix ur participation level', status=status.HTTP_400_BAD_REQUEST)
+        r = OneTimeParticipationReport.objects.create(
+            central_service_id=data['id'],
+            title=title,
+            work=work,
+            date=date
+        )
+
+        a = OneTimeParticipationApp.objects.create(
+            owner=request.user,
+            responsible=responsible,
+            report=r,
+            is_organizer=is_organizer,
+            is_co_organizer=is_co_organizer,
+            is_assistant=is_assistant
+        )
+        serializer = OneTimeParticipationSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class OneTimeView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OneTimeParticipationApp.objects.all()
     serializer_class = OneTimeParticipationSerializer
+    permission_classes = [IsOwner]
 
 
 class ListOneTimeView(generics.ListAPIView):
     queryset = OneTimeParticipationApp.objects.all()
     serializer_class = OneTimeParticipationSerializer
+    permission_classes = [IsAdmin]
+
+
+class ListOwnOneTimeView(generics.ListAPIView):
+    queryset = None
+    serializer_class = OneTimeParticipationSerializer
+
+    def get(self, request):
+        self.queryset = OneTimeParticipationApp.objects.filter(owner=request.user).order_by('-id')
+        return super().list(request)
+
+
+class RateOneTimeView(APIView):
+    permission_classes = [IsAdmin]
+
+    def put(self, request, pk):
+        a = OneTimeParticipationApp.objects.get(pk=pk)
 
 
 class CreateSystematicView(APIView):
     def post(self, request):
+        response = get_id_and_status(request.headers['Authorization'])
+        if response.status_code != 200:
+            return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(response.text)
+        if not data['status']:
+            return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
-            r = SystematicReport.objects.create(
-                title=request.data['title'],
-                work=request.data['work'],
-                start_date=request.data['start_date'],
-                finish_date=request.data['finish_date']
-            )
-
-            a = SystematicApp.objects.create(
-                responsible=request.data['responsible'],
-                report=r,
-                is_organizer=request.data['is_organizer'],
-                is_co_organizer=request.data['is_co_organizer'],
-                is_assistant=request.data['is_assistant']
-            )
+            title = request.data['title']
+            work = request.data['work']
+            start_date = datetime.datetime.strptime(request.data['start_date'], '%Y-%m-%d').date()
+            finish_date = datetime.datetime.strptime(request.data['finish_date'], '%Y-%m-%d').date()
+            responsible = request.data['responsible']
+            is_organizer = request.data['is_organizer']
+            is_co_organizer = request.data['is_co_organizer']
+            is_assistant = request.data['is_assistant']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
-        serializer = OneTimeParticipationSerializer(r, context={'request': request})
+        except ValueError:
+            return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        if is_organizer + is_co_organizer + is_assistant != 1:
+            return Response('fix ur participation level', status=status.HTTP_400_BAD_REQUEST)
+        r = SystematicReport.objects.create(
+            central_service_id=data['id'],
+            title=title,
+            work=work,
+            start_date=start_date,
+            finish_date=finish_date
+        )
+
+        a = SystematicApp.objects.create(
+            owner=request.user,
+            responsible=responsible,
+            report=r,
+            is_organizer=is_organizer,
+            is_co_organizer=is_co_organizer,
+            is_assistant=is_assistant
+        )
+        serializer = OneTimeParticipationSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -72,26 +148,55 @@ class ListSystematicView(generics.ListAPIView):
     serializer_class = SystematicSerializer
 
 
+class ListOwnSystematicView(generics.ListAPIView):
+    queryset = None
+    serializer_class = SystematicSerializer
+
+    def get(self, request):
+        self.queryset = SystematicApp.objects.filter(owner=request.user).order_by('-id')
+        return super().list(request)
+
+
 class CreateVolunteerView(APIView):
     def post(self, request):
+        response = get_id_and_status(request.headers['Authorization'])
+        if response.status_code != 200:
+            return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(response.text)
+        if not data['status']:
+            return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
-            r = VolunteerReport.objects.create(
-                title=request.data['title'],
-                work=request.data['work'],
-                date=request.data['date']
-            )
-
-            a = VolunteerApp.objects.create(
-                responsible=request.data['responsible'],
-                report=r,
-                is_leader=request.data['is_leader'],
-                is_organizer=request.data['is_organizer'],
-                is_teamleader=request.data['is_teamleader'],
-                is_volunteer=request.data['is_volunteer']
-            )
+            title = request.data['title']
+            work = request.data['work']
+            date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
+            responsible = request.data['responsible']
+            is_leader = request.data['is_leader']
+            is_organizer = request.data['is_organizer']
+            is_teamleader = request.data['is_teamleader']
+            is_volunteer = request.data['is_volunteer']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
-        serializer = OneTimeParticipationSerializer(r, context={'request': request})
+        except ValueError:
+            return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        if is_organizer + is_leader + is_teamleader + is_volunteer != 1:
+            return Response('fix ur participation level', status=status.HTTP_400_BAD_REQUEST)
+        r = VolunteerReport.objects.create(
+            central_service_id=data['id'],
+            title=title,
+            work=work,
+            date=date
+        )
+
+        a = VolunteerApp.objects.create(
+            owner=request.user,
+            responsible=responsible,
+            report=r,
+            is_leader=is_leader,
+            is_organizer=is_organizer,
+            is_teamleader=is_teamleader,
+            is_volunteer=is_volunteer
+        )
+        serializer = OneTimeParticipationSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -105,24 +210,47 @@ class ListVolunteerView(generics.ListAPIView):
     serializer_class = VolunteerSerializer
 
 
+class ListOwnVolunteerView(generics.ListAPIView):
+    queryset = None
+    serializer_class = VolunteerSerializer
+
+    def get(self, request):
+        self.queryset = VolunteerApp.objects.filter(owner=request.user).order_by('-id')
+        return super().list(request)
+
+
 class CreateInformationSupportView(APIView):
     def post(self, request):
+        response = get_id_and_status(request.headers['Authorization'])
+        if response.status_code != 200:
+            return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(response.text)
+        if not data['status']:
+            return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
-            r = InformationSupportReport.objects.create(
-                title=request.data['title'],
-                work=request.data['work'],
-                start_date=request.data['start_date'],
-                finish_date=request.data['finish_date']
-            )
-
-            a = InformationSupportApp.objects.create(
-                responsible=request.data['responsible'],
-                report=r,
-                scores=request.data['scores']
-            )
+            title = request.data['title']
+            work = request.data['work']
+            start_date = datetime.datetime.strptime(request.data['start_date'], '%Y-%m-%d').date()
+            finish_date = datetime.datetime.strptime(request.data['finish_date'], '%Y-%m-%d').date()
+            responsible = request.data['responsible']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
-        serializer = OneTimeParticipationSerializer(r, context={'request': request})
+        except ValueError:
+            return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        r = InformationSupportReport.objects.create(
+            central_service_id=data['id'],
+            title=title,
+            work=work,
+            start_date=start_date,
+            finish_date=finish_date
+        )
+
+        a = InformationSupportApp.objects.create(
+            owner=request.user,
+            responsible=responsible,
+            report=r,
+        )
+        serializer = OneTimeParticipationSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -136,23 +264,46 @@ class ListInformationSupportView(generics.ListAPIView):
     serializer_class = InformationSupportSerializer
 
 
+class ListOwnInformationSupportView(generics.ListAPIView):
+    queryset = None
+    serializer_class = InformationSupportSerializer
+
+    def get(self, request):
+        self.queryset = InformationSupportApp.objects.filter(owner=request.user).order_by('-id')
+        return super().list(request)
+
+
 class CreateArticleView(APIView):
     def post(self, request):
+        response = get_id_and_status(request.headers['Authorization'])
+        if response.status_code != 200:
+            return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
+        data = json.loads(response.text)
+        if not data['status']:
+            return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
-            r = ArticleReport.objects.create(
-                title=request.data['title'],
-                media_title=request.data['media_title'],
-                edition_level_choicer=request.data['edition_level_choicer'],
-                co_author_quantity=request.data['co_author_quantity'],
-                date=request.data['date'],
-            )
-
-            a = InformationSupportApp.objects.create(
-                report=r,
-                scores=request.data['scores']
-            )
+            title = request.data['title']
+            media_title = request.data['media_title']
+            edition_level_choicer = request.data['edition_level_choicer']
+            co_author_quantity = request.data['co_author_quantity']
+            date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except ValueError:
+            return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        r = ArticleReport.objects.create(
+            central_service_id=data['id'],
+            title=title,
+            media_title=media_title,
+            edition_level_choicer=edition_level_choicer,
+            co_author_quantity=co_author_quantity,
+            date=date,
+        )
+
+        a = ArticleApp.objects.create(
+            owner=request.user,
+            report=r,
+        )
         serializer = OneTimeParticipationSerializer(r, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -167,110 +318,10 @@ class ListArticleView(generics.ListAPIView):
     serializer_class = ArticleSerializer
 
 
-#
-# class CreateView(APIView):
-#     def create_onetime(self, request):
-#         try:
-#             r = OneTimeParticipationReport.objects.create(title=request.data['title'],
-#                                                           work=request.data['work'],
-#                                                           date=request.data['date'])
-#
-#             a = OneTimeParticipationApp.objects.create(responsible=request.data['responsible'],
-#                                                        report=r,
-#                                                        is_assistant=request.data['is_assistant'],
-#                                                        is_co_organizer=request.data['is_co_organizer'],
-#                                                        is_organizer=request.data['is_organizer'])
-#         except KeyError:
-#             return None
-#         except ValueError:
-#             return None
-#         return OneTimeParticipationSerializer(a, context={'request': request})
-#
-#     def create_system(self, request):
-#         try:
-#             r = SystematicReport.objects.create(title=request.data['title'],
-#                                                 work=request.data['work'],
-#                                                 start_date=request.data['start_date'],
-#                                                 final_date=request.data['final_date'])
-#
-#             a = SystematicApp.objects.create(responsible=request.data['responsible'],
-#                                              report=r,
-#                                              is_assistant=request.data['is_assistant'],
-#                                              is_co_organizer=request.data['is_co_organizer'],
-#                                              is_organizer=request.data['is_organizer'])
-#         except KeyError:
-#             return None
-#         except ValueError:
-#             return None
-#         return SystematicSerializer(a, context={'request': request})
-#
-#     def create_volunteer(self, request):
-#         try:
-#             r = VolunteerReport.objects.create(title=request.data['title'],
-#                                                work=request.data['work'],
-#                                                date=request.data['date'])
-#
-#             a = VolunteerApp.objects.create(responsible=request.data['responsible'],
-#                                             report=r,
-#                                             is_leader=request.data['is_leader'],
-#                                             is_teamleader=request.data['is_teamleader'],
-#                                             is_volunteer=request.data['is_volunteer'],
-#                                             is_organizer=request.data['is_organizer'])
-#         except KeyError:
-#             return None
-#         except ValueError:
-#             return None
-#         return VolunteerSerializer(a, context={'request': request})
-#
-#     def create_info(self, request):
-#         try:
-#             r = InformationSupportReport.objects.create(title=request.data['title'],
-#                                                         work=request.data['work'],
-#                                                         start_date=request.data['start_date'],
-#                                                         final_date=request.data['final_date'])
-#
-#             a = InformationSupportApp.objects.create(responsible=request.data['responsible'],
-#                                                      report=r)
-#         except KeyError:
-#             return None
-#         return InformationSupportSerializer(a, context={'request': request})
-#
-#     def create_article(self, request):
-#         try:
-#             r = ArticleReport.objects.create(title=request.data['title'],
-#                                              media_title=request.data['media_title'],
-#                                              edition_level_choicer=request.data['edition_level'],
-#                                              co_author_quantity=request.data['co_author_quantity'],
-#                                              date=request.data['date'])
-#
-#             a = ArticleApp.objects.create(responsible=request.data['responsible'],
-#                                           report=r)
-#         except KeyError:
-#             return None
-#         return ArticleSerializer(a, context={'request': request})
-#
-#     def post(self, request, category):
-#         d = {'onetime': self.create_onetime,
-#              'systematic': self.create_system,
-#              'volunteer': self.create_volunteer,
-#              'info': self.create_info,
-#              'article': self.create_article}
-#         obj = d.get(category)(request)
-#         if obj is None:
-#             return Response('Something wrong with arguments', status=status.HTTP_400_BAD_REQUEST)
-#         return Response(obj, status=status.HTTP_201_CREATED)
-#
-#
-# class ReadListView(APIView):
-#     def get(self, request, category):
-#         d = {'onetime': OneTimeParticipationApp,
-#              'systematic': SystematicApp,
-#              'volunteer': VolunteerApp,
-#              'info': InformationSupportApp,
-#              'article': ArticleApp}
-#         d.get(category)().objects.all()
+class ListOwnArticleView(generics.ListAPIView):
+    queryset = None
+    serializer_class = ArticleSerializer
 
-class Kek(APIView):
     def get(self, request):
-        print(request.user)
-        return Response(status=200)
+        self.queryset = ArticleApp.objects.filter(owner=request.user).order_by('-id')
+        return super().list(request)
