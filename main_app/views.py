@@ -110,6 +110,19 @@ class ListOwnOneTimeView(generics.ListAPIView):
 class RateOneTimeView(APIView):
     permission_classes = [IsAdmin]
 
+    '''
+    DELETE
+    '''
+
+    class body6(serializers.Serializer):
+        scores = serializers.IntegerField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body6(),
+                         responses={
+                             '201': OneTimeParticipationSerializer(),
+                             '400': 'send full info'
+                         })
     def put(self, request, pk):
         a = OneTimeParticipationApp.objects.get(pk=pk)
         try:
@@ -211,6 +224,19 @@ class ListOwnSystematicView(generics.ListAPIView):
 class RateSystematicView(APIView):
     permission_classes = [IsAdmin]
 
+    '''
+    DELETE
+    '''
+
+    class body7(serializers.Serializer):
+        scores = serializers.IntegerField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body7(),
+                         responses={
+                             '201': SystematicSerializer(),
+                             '400': 'send full info'
+                         })
     def put(self, request, pk):
         a = SystematicApp.objects.get(pk=pk)
         try:
@@ -312,6 +338,19 @@ class ListOwnVolunteerView(generics.ListAPIView):
 class RateVolunteerView(APIView):
     permission_classes = [IsAdmin]
 
+    '''
+    DELETE
+    '''
+
+    class body8(serializers.Serializer):
+        scores = serializers.IntegerField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body8(),
+                         responses={
+                             '201': VolunteerSerializer(),
+                             '400': 'send full info'
+                         })
     def put(self, request, pk):
         a = VolunteerApp.objects.get(pk=pk)
         try:
@@ -402,6 +441,19 @@ class ListOwnInformationSupportView(generics.ListAPIView):
 class RateInformationSupportView(APIView):
     permission_classes = [IsAdmin]
 
+    '''
+    DELETE
+    '''
+
+    class body9(serializers.Serializer):
+        scores = serializers.IntegerField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body9(),
+                         responses={
+                             '201': InformationSupportSerializer(),
+                             '400': 'send full info'
+                         })
     def put(self, request, pk):
         a = InformationSupportApp.objects.get(pk=pk)
         try:
@@ -499,6 +551,19 @@ class ListOwnArticleView(generics.ListAPIView):
 class RateArticleView(APIView):
     permission_classes = [IsAdmin]
 
+    '''
+    DELETE
+    '''
+
+    class body10(serializers.Serializer):
+        scores = serializers.IntegerField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body10(),
+                         responses={
+                             '201': ArticleSerializer(),
+                             '400': 'send full info'
+                         })
     def put(self, request, pk):
         a = ArticleApp.objects.get(pk=pk)
         try:
