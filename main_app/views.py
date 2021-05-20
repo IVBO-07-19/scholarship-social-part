@@ -6,8 +6,8 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
 
-from main_app.models import *
 from main_app.serializers import *
 
 from custom_user.permissions import *
@@ -21,12 +21,31 @@ def get_id_and_status(token):
     return r
 
 
-class Test(APIView):
-    def get(self, request):
-        return Response(data=get_id_and_status(request.headers['Authorization']))
-
-
 class CreateOneTimeView(APIView):
+    '''
+    DELETE
+    '''
+
+    class body1(serializers.Serializer):
+        title = serializers.CharField()
+        work = serializers.CharField()
+        responsible = serializers.CharField()
+        is_organizer = serializers.BooleanField()
+        is_co_organizer = serializers.BooleanField()
+        is_assistant = serializers.BooleanField()
+        date = serializers.DateField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body1(),
+                         responses={
+                             '201': OneTimeParticipationSerializer(),
+                             '200': 'ur application is closed',
+                             '400': 'create application in central service',
+                             '400': 'send full info',
+                             '400': 'change date to correct',
+                             '400': 'fix ur participation level',
+                             '400': 'create application in central service'
+                         })
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
         if response.status_code != 200:
@@ -67,7 +86,7 @@ class CreateOneTimeView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class OneTimeView(generics.RetrieveUpdateDestroyAPIView):
+class OneTimeView(generics.RetrieveAPIView):
     queryset = OneTimeParticipationApp.objects.all()
     serializer_class = OneTimeParticipationSerializer
     permission_classes = [IsOwner]
@@ -103,6 +122,31 @@ class RateOneTimeView(APIView):
 
 
 class CreateSystematicView(APIView):
+    '''
+    DELETE
+    '''
+
+    class body2(serializers.Serializer):
+        title = serializers.CharField()
+        work = serializers.CharField()
+        responsible = serializers.CharField()
+        is_organizer = serializers.BooleanField()
+        is_co_organizer = serializers.BooleanField()
+        is_assistant = serializers.BooleanField()
+        start_date = serializers.DateField()
+        finish_date = serializers.DateField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body2(),
+                         responses={
+                             '201': SystematicSerializer(),
+                             '200': 'ur application is closed',
+                             '400': 'create application in central service',
+                             '400': 'send full info',
+                             '400': 'change date to correct',
+                             '400': 'fix ur participation level',
+                             '400': 'create application in central service'
+                         })
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
         if response.status_code != 200:
@@ -141,11 +185,11 @@ class CreateSystematicView(APIView):
             is_co_organizer=is_co_organizer,
             is_assistant=is_assistant
         )
-        serializer = OneTimeParticipationSerializer(a, context={'request': request})
+        serializer = SystematicSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SystematicView(generics.RetrieveUpdateDestroyAPIView):
+class SystematicView(generics.RetrieveAPIView):
     queryset = SystematicApp.objects.all()
     serializer_class = SystematicSerializer
 
@@ -179,6 +223,31 @@ class RateSystematicView(APIView):
 
 
 class CreateVolunteerView(APIView):
+    '''
+    DELETE
+    '''
+
+    class body3(serializers.Serializer):
+        title = serializers.CharField()
+        work = serializers.CharField()
+        responsible = serializers.CharField()
+        is_organizer = serializers.BooleanField()
+        is_leader = serializers.BooleanField()
+        is_volunteer = serializers.BooleanField()
+        is_teamleader = serializers.BooleanField()
+        date = serializers.DateField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body3(),
+                         responses={
+                             '201': VolunteerSerializer(),
+                             '200': 'ur application is closed',
+                             '400': 'create application in central service',
+                             '400': 'send full info',
+                             '400': 'change date to correct',
+                             '400': 'fix ur participation level',
+                             '400': 'create application in central service'
+                         })
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
         if response.status_code != 200:
@@ -217,11 +286,11 @@ class CreateVolunteerView(APIView):
             is_teamleader=is_teamleader,
             is_volunteer=is_volunteer
         )
-        serializer = OneTimeParticipationSerializer(a, context={'request': request})
+        serializer = VolunteerSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class VolunteerView(generics.RetrieveUpdateDestroyAPIView):
+class VolunteerView(generics.RetrieveAPIView):
     queryset = VolunteerApp.objects.all()
     serializer_class = VolunteerSerializer
 
@@ -255,6 +324,28 @@ class RateVolunteerView(APIView):
 
 
 class CreateInformationSupportView(APIView):
+    '''
+    DELETE
+    '''
+
+    class body4(serializers.Serializer):
+        title = serializers.CharField()
+        work = serializers.CharField()
+        responsible = serializers.CharField()
+        start_date = serializers.DateField()
+        finish_date = serializers.DateField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body4(),
+                         responses={
+                             '201': InformationSupportSerializer(),
+                             '200': 'ur application is closed',
+                             '400': 'create application in central service',
+                             '400': 'send full info',
+                             '400': 'change date to correct',
+                             '400': 'fix ur participation level',
+                             '400': 'create application in central service'
+                         })
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
         if response.status_code != 200:
@@ -285,11 +376,11 @@ class CreateInformationSupportView(APIView):
             responsible=responsible,
             report=r,
         )
-        serializer = OneTimeParticipationSerializer(a, context={'request': request})
+        serializer = InformationSupportSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InformationSupportView(generics.RetrieveUpdateDestroyAPIView):
+class InformationSupportView(generics.RetrieveAPIView):
     queryset = InformationSupportApp.objects.all()
     serializer_class = InformationSupportSerializer
 
@@ -323,23 +414,52 @@ class RateInformationSupportView(APIView):
 
 
 class CreateArticleView(APIView):
+    '''
+    DELETE
+    '''
+
+    class body5(serializers.Serializer):
+        title = serializers.CharField()
+        meida_title = serializers.CharField()
+        edition_level_choicer = serializers.CharField()
+        co_author_quantity = serializers.IntegerField()
+        responsible = serializers.CharField()
+        date = serializers.DateField()
+
+    @swagger_auto_schema(operation_description='creates new application',
+                         request_body=body5(),
+                         responses={
+                             '201': ArticleSerializer(),
+                             '200': 'ur application is closed',
+                             '400': 'create application in central service',
+                             '400': 'send full info',
+                             '400': 'change date to correct',
+                             '400': 'fix ur participation level',
+                             '400': 'create application in central service'
+                         })
     def post(self, request):
         response = get_id_and_status(request.headers['Authorization'])
         if response.status_code != 200:
             return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
         data = json.loads(response.text)
+        d = {
+            'municipal': ArticleReport.MUNICIPAL,
+            'university': ArticleReport.UNIVERSITY
+        }
         if not data['status']:
             return Response('ur application is closed', status=status.HTTP_200_OK)
         try:
             title = request.data['title']
             media_title = request.data['media_title']
             edition_level_choicer = request.data['edition_level_choicer']
-            co_author_quantity = request.data['co_author_quantity']
+            co_author_quantity = d.get(request.data['co_author_quantity'])
             date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
             return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+        if co_author_quantity is None:
+            return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         r = ArticleReport.objects.create(
             central_service_id=data['id'],
             title=title,
@@ -353,11 +473,11 @@ class CreateArticleView(APIView):
             owner=request.user,
             report=r,
         )
-        serializer = OneTimeParticipationSerializer(r, context={'request': request})
+        serializer = ArticleSerializer(r, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ArticleView(generics.RetrieveUpdateDestroyAPIView):
+class ArticleView(generics.RetrieveAPIView):
     queryset = ArticleApp.objects.all()
     serializer_class = ArticleSerializer
 

@@ -34,6 +34,4 @@ urlpatterns = [
     path('article/list/own/', ListOwnArticleView.as_view()),
     path('article/rate/<int:pk>/', RateArticleView.as_view()),
 
-    path('test/', Test.as_view()),
-
 ]

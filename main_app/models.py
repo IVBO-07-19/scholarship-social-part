@@ -111,9 +111,11 @@ class ArticleReport(models.Model):
     title = models.CharField(max_length=255, verbose_name='Название статьи')
     central_service_id = models.IntegerField(verbose_name='Id центрального сервиса')
     media_title = models.CharField(max_length=255, verbose_name='Название источника СМИ')
+    UNIVERSITY = 'university'
+    MUNICIPAL = 'municipal'
     EDITION_LEVEL = (
-        ('university', 'университетский'),
-        ('municipal', 'городской'),
+        (UNIVERSITY, 'университетский'),
+        (MUNICIPAL, 'городской'),
     )
     edition_level_choicer = models.CharField(max_length=255, verbose_name='Уровень издания', choices=EDITION_LEVEL)
     co_author_quantity = models.PositiveSmallIntegerField(verbose_name='Количество соавторов', default=0)
