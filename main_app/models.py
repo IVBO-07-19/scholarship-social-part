@@ -4,12 +4,6 @@ from django.db import models
 User = get_user_model()
 
 
-# class Approvation(models.Model):
-#     judge = models.ForeignKey(User, on_delete=models.CASCADE)
-#     date = models.DateField(auto_now_add=True, verbose_name='Дата оценивания')
-#     opinion_score = models.SmallIntegerField(verbose_name='Субъективная оценка')
-
-
 class BaseReport(models.Model):
     class Meta:
         abstract = True
@@ -30,7 +24,6 @@ class BaseApp(models.Model):
     responsible = models.CharField(max_length=255,
                                    verbose_name='ФИО и должность лица, подтверждающего участие')
     scores = models.PositiveSmallIntegerField(verbose_name='Баллы', null=True, blank=True)
-    # approvation = models.ManyToManyField(Approvation, verbose_name='Проверено', blank=True)
 
 
 class OneTimeParticipationReport(BaseReport):
