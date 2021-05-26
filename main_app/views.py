@@ -15,7 +15,7 @@ from custom_user.permissions import *
 
 def get_id_and_status(token):
     data = {'Authorization': token}
-    r = requests.get('http://127.0.0.1:8001/api/application/last/',
+    r = requests.get('https://secure-gorge-99048.herokuapp.com/api/application/last/',
                      headers=data)
 
     return r
@@ -39,7 +39,7 @@ class CreateOneTimeView(APIView):
                          request_body=body1(),
                          responses={
                              '201': OneTimeParticipationSerializer(),
-                             '200': 'ur application is closed',
+                             '400': 'ur application is closed',
                              '400': 'create application in central service',
                              '400': 'send full info',
                              '400': 'change date to correct',
@@ -52,7 +52,7 @@ class CreateOneTimeView(APIView):
             return Response('create application in central service', status=status.HTTP_400_BAD_REQUEST)
         data = json.loads(response.text)
         if not data['status']:
-            return Response('ur application is closed', status=status.HTTP_200_OK)
+            return Response('ur application is closed', status=status.HTTP_400_BAD_REQUEST)
         try:
             title = request.data['title']
             work = request.data['work']
@@ -65,6 +65,7 @@ class CreateOneTimeView(APIView):
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
             return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
+
         if is_organizer + is_co_organizer + is_assistant != 1:
             return Response('fix ur participation level', status=status.HTTP_400_BAD_REQUEST)
         r = OneTimeParticipationReport.objects.create(
@@ -121,14 +122,17 @@ class RateOneTimeView(APIView):
                          request_body=body6(),
                          responses={
                              '201': OneTimeParticipationSerializer(),
-                             '400': 'send full info'
+                             '400': 'send full info',
+                             '400': 'wrong address'
                          })
     def put(self, request, pk):
-        a = OneTimeParticipationApp.objects.get(pk=pk)
         try:
+            a = OneTimeParticipationApp.objects.get(pk=pk)
             a.scores = request.data['scores']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except OneTimeParticipationApp.DoesNotExist:
+            return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = OneTimeParticipationSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -147,7 +151,7 @@ class CreateSystematicView(APIView):
         is_co_organizer = serializers.BooleanField()
         is_assistant = serializers.BooleanField()
         start_date = serializers.DateField()
-        finish_date = serializers.DateField()
+        final_date = serializers.DateField()
 
     @swagger_auto_schema(operation_description='creates new application',
                          request_body=body2(),
@@ -171,11 +175,12 @@ class CreateSystematicView(APIView):
             title = request.data['title']
             work = request.data['work']
             start_date = datetime.datetime.strptime(request.data['start_date'], '%Y-%m-%d').date()
-            finish_date = datetime.datetime.strptime(request.data['finish_date'], '%Y-%m-%d').date()
+            final_date = datetime.datetime.strptime(request.data['final_date'], '%Y-%m-%d').date()
             responsible = request.data['responsible']
-            is_organizer = request.data['is_organizer']
-            is_co_organizer = request.data['is_co_organizer']
-            is_assistant = request.data['is_assistant']
+            is_organizer = bool(request.data['is_organizer'])
+            is_co_organizer = bool(request.data['is_co_organizer'])
+            is_assistant = bool(request.data['is_assistant'])
+
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
@@ -187,7 +192,7 @@ class CreateSystematicView(APIView):
             title=title,
             work=work,
             start_date=start_date,
-            finish_date=finish_date
+            final_date=final_date
         )
 
         a = SystematicApp.objects.create(
@@ -235,14 +240,17 @@ class RateSystematicView(APIView):
                          request_body=body7(),
                          responses={
                              '201': SystematicSerializer(),
-                             '400': 'send full info'
+                             '400': 'send full info',
+                             '400': 'swrong address'
                          })
     def put(self, request, pk):
-        a = SystematicApp.objects.get(pk=pk)
         try:
+            a = SystematicApp.objects.get(pk=pk)
             a.scores = request.data['scores']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except SystematicApp.DoesNotExist:
+            return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = SystematicSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -286,10 +294,10 @@ class CreateVolunteerView(APIView):
             work = request.data['work']
             date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
             responsible = request.data['responsible']
-            is_leader = request.data['is_leader']
-            is_organizer = request.data['is_organizer']
-            is_teamleader = request.data['is_teamleader']
-            is_volunteer = request.data['is_volunteer']
+            is_leader = bool(request.data['is_leader'])
+            is_organizer = bool(request.data['is_organizer'])
+            is_teamleader = bool(request.data['is_teamleader'])
+            is_volunteer = bool(request.data['is_volunteer'])
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
@@ -349,14 +357,17 @@ class RateVolunteerView(APIView):
                          request_body=body8(),
                          responses={
                              '201': VolunteerSerializer(),
-                             '400': 'send full info'
+                             '400': 'send full info',
+                             '400': 'wrong address'
                          })
     def put(self, request, pk):
-        a = VolunteerApp.objects.get(pk=pk)
         try:
+            a = VolunteerApp.objects.get(pk=pk)
             a.scores = request.data['scores']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except VolunteerApp.DoesNotExist:
+            return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = VolunteerSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -372,7 +383,7 @@ class CreateInformationSupportView(APIView):
         work = serializers.CharField()
         responsible = serializers.CharField()
         start_date = serializers.DateField()
-        finish_date = serializers.DateField()
+        final_date = serializers.DateField()
 
     @swagger_auto_schema(operation_description='creates new application',
                          request_body=body4(),
@@ -396,7 +407,7 @@ class CreateInformationSupportView(APIView):
             title = request.data['title']
             work = request.data['work']
             start_date = datetime.datetime.strptime(request.data['start_date'], '%Y-%m-%d').date()
-            finish_date = datetime.datetime.strptime(request.data['finish_date'], '%Y-%m-%d').date()
+            final_date = datetime.datetime.strptime(request.data['final_date'], '%Y-%m-%d').date()
             responsible = request.data['responsible']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
@@ -407,7 +418,7 @@ class CreateInformationSupportView(APIView):
             title=title,
             work=work,
             start_date=start_date,
-            finish_date=finish_date
+            final_date=final_date
         )
 
         a = InformationSupportApp.objects.create(
@@ -452,14 +463,17 @@ class RateInformationSupportView(APIView):
                          request_body=body9(),
                          responses={
                              '201': InformationSupportSerializer(),
-                             '400': 'send full info'
+                             '400': 'send full info',
+                             '400': 'wrong address'
                          })
     def put(self, request, pk):
-        a = InformationSupportApp.objects.get(pk=pk)
         try:
+            a = InformationSupportApp.objects.get(pk=pk)
             a.scores = request.data['scores']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except InformationSupportApp.DoesNotExist:
+            return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = InformationSupportSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -475,7 +489,6 @@ class CreateArticleView(APIView):
         meida_title = serializers.CharField()
         edition_level_choicer = serializers.CharField()
         co_author_quantity = serializers.IntegerField()
-        responsible = serializers.CharField()
         date = serializers.DateField()
 
     @swagger_auto_schema(operation_description='creates new application',
@@ -503,14 +516,14 @@ class CreateArticleView(APIView):
         try:
             title = request.data['title']
             media_title = request.data['media_title']
-            edition_level_choicer = request.data['edition_level_choicer']
-            co_author_quantity = d.get(request.data['co_author_quantity'])
+            edition_level_choicer = d.get(request.data['edition_level_choicer'])
+            co_author_quantity = request.data['co_author_quantity']
             date = datetime.datetime.strptime(request.data['date'], '%Y-%m-%d').date()
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         except ValueError:
             return Response('change date to correct', status=status.HTTP_400_BAD_REQUEST)
-        if co_author_quantity is None:
+        if edition_level_choicer is None:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
         r = ArticleReport.objects.create(
             central_service_id=data['id'],
@@ -525,7 +538,7 @@ class CreateArticleView(APIView):
             owner=request.user,
             report=r,
         )
-        serializer = ArticleSerializer(r, context={'request': request})
+        serializer = ArticleSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -562,14 +575,17 @@ class RateArticleView(APIView):
                          request_body=body10(),
                          responses={
                              '201': ArticleSerializer(),
-                             '400': 'send full info'
+                             '400': 'send full info',
+                             '400': 'wrong address'
                          })
     def put(self, request, pk):
-        a = ArticleApp.objects.get(pk=pk)
         try:
+            a = ArticleApp.objects.get(pk=pk)
             a.scores = request.data['scores']
         except KeyError:
             return Response('send full info', status=status.HTTP_400_BAD_REQUEST)
+        except ArticleApp.DoesNotExist:
+            return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = ArticleSerializer(a, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
