@@ -10,6 +10,7 @@ urlpatterns = [
     path('onetime/list/own/', ListOwnOneTimeView.as_view()),
     path('onetime/rate/<int:pk>/', RateOneTimeView.as_view()),
     path('onetime/byapp/<int:pk>/', OnetimeByAppIDView.as_view()),
+    path('onetime/change/<int:pk>/', OnetimeChangeView.as_view()),
 
     path('systematic/create/', CreateSystematicView.as_view()),
     path('systematic/<int:pk>/', SystematicView.as_view()),
@@ -17,6 +18,7 @@ urlpatterns = [
     path('systematic/list/own/', ListOwnSystematicView.as_view()),
     path('systematic/rate/<int:pk>/', RateSystematicView.as_view()),
     path('systematic/byapp/<int:pk>/', SystematicByAppIDView.as_view()),
+    path('systematic/change/<int:pk>/', SystematicChangeView.as_view()),
 
     path('volunteer/create/', CreateVolunteerView.as_view()),
     path('volunteer/<int:pk>/', VolunteerView.as_view()),
@@ -24,6 +26,7 @@ urlpatterns = [
     path('volunteer/list/own/', ListOwnVolunteerView.as_view()),
     path('volunteer/rate/<int:pk>/', RateVolunteerView.as_view()),
     path('volunteer/byapp/<int:pk>/', VolunteerByAppIDView.as_view()),
+    path('volunteer/change/<int:pk>/', VolunteerChangeView.as_view()),
 
     path('information/create/', CreateInformationSupportView.as_view()),
     path('information/<int:pk>/', InformationSupportView.as_view()),
@@ -31,6 +34,7 @@ urlpatterns = [
     path('information/list/own/', ListOwnInformationSupportView.as_view()),
     path('information/rate/<int:pk>/', RateInformationSupportView.as_view()),
     path('information/byapp/<int:pk>/', InformationSupportByAppIDView.as_view()),
+    path('information/change/<int:pk>/', InformationSupportChangeView.as_view()),
 
     path('article/create/', CreateArticleView.as_view()),
     path('article/<int:pk>/', ArticleView.as_view()),
@@ -38,5 +42,6 @@ urlpatterns = [
     path('article/list/own/', ListOwnArticleView.as_view()),
     path('article/rate/<int:pk>/', RateArticleView.as_view()),
     path('article/byapp/<int:pk>/', ArticleByAppIDView.as_view()),
+    path('article/change/<int:pk>/', ArticleChangeView.as_view()),
 
 ]
