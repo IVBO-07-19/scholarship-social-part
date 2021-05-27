@@ -47,7 +47,7 @@ class Test(TestSetUp):
         data = {
             'title': 'string',
             'media_title': 'string',
-            'edition_level_choicer': 'string',
+            'edition_level_choicer': 'university',
             'co_author_quantity': 1,
             'date': '2021-01-01'
         }

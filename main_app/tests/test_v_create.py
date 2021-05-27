@@ -46,13 +46,14 @@ class Test(TestSetUp):
 
     def test_without_application(self):
         self.client.credentials(HTTP_AUTHORIZATION=self.ADMIN)
+
         data = {
-            'title': 'string',
-            'work': 'string',
-            'responsible': 'string',
-            'is_organizer': True,
-            'is_leader': False,
-            'is_volunteer': False,
+            'title': 'cool work',
+            'work': 'yes',
+            'responsible': 'Zuev',
+            'is_organizer': '',
+            'is_leader': '',
+            'is_volunteer': '',
             'is_teamleader': False,
             'date': '2021-01-01'
         }

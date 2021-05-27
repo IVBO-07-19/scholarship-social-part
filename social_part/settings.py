@@ -24,8 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = config('SECRET_KEY')
 SECRET_KEY = '14=9d)vxq$wyy)wjw-2=g%$p$eu7mi2k!c!wz!b7%0(i#g(v8r'
 
-DEBUG = False
-
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 

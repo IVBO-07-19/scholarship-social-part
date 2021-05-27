@@ -86,10 +86,15 @@ class CreateOneTimeView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class OneTimeView(generics.RetrieveAPIView):
-    queryset = OneTimeParticipationApp.objects.all()
-    serializer_class = OneTimeParticipationSerializer
-    permission_classes = [IsOwner]
+class OneTimeView(APIView):
+
+    def get(self, request, pk):
+        try:
+            o = OneTimeParticipationApp.objects.get(pk=pk, owner=request.user)
+        except OneTimeParticipationApp.DoesNotExist:
+            return Response('does not exist', status=status.HTTP_400_BAD_REQUEST)
+        serializer = OneTimeParticipationSerializer(o, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListOneTimeView(generics.ListAPIView):
@@ -213,9 +218,15 @@ class CreateSystematicView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SystematicView(generics.RetrieveAPIView):
-    queryset = SystematicApp.objects.all()
-    serializer_class = SystematicSerializer
+class SystematicView(APIView):
+
+    def get(self, request, pk):
+        try:
+            o = SystematicApp.objects.get(pk=pk, owner=request.user)
+        except SystematicApp.DoesNotExist:
+            return Response('does not exist', status=status.HTTP_400_BAD_REQUEST)
+        serializer = SystematicSerializer(o, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListSystematicView(generics.ListAPIView):
@@ -337,9 +348,15 @@ class CreateVolunteerView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class VolunteerView(generics.RetrieveAPIView):
-    queryset = VolunteerApp.objects.all()
-    serializer_class = VolunteerSerializer
+class VolunteerView(APIView):
+
+    def get(self, request, pk):
+        try:
+            o = VolunteerApp.objects.get(pk=pk, owner=request.user)
+        except VolunteerApp.DoesNotExist:
+            return Response('does not exist', status=status.HTTP_400_BAD_REQUEST)
+        serializer = VolunteerSerializer(o, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListVolunteerView(generics.ListAPIView):
@@ -450,9 +467,15 @@ class CreateInformationSupportView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class InformationSupportView(generics.RetrieveAPIView):
-    queryset = InformationSupportApp.objects.all()
-    serializer_class = InformationSupportSerializer
+class InformationSupportView(APIView):
+
+    def get(self, request, pk):
+        try:
+            o = InformationSupportApp.objects.get(pk=pk, owner=request.user)
+        except InformationSupportApp.DoesNotExist:
+            return Response('does not exist', status=status.HTTP_400_BAD_REQUEST)
+        serializer = InformationSupportSerializer(o, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListInformationSupportView(generics.ListAPIView):
@@ -569,9 +592,15 @@ class CreateArticleView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ArticleView(generics.RetrieveAPIView):
-    queryset = ArticleApp.objects.all()
-    serializer_class = ArticleSerializer
+class ArticleView(APIView):
+
+    def get(self, request, pk):
+        try:
+            o = ArticleApp.objects.get(pk=pk, owner=request.user)
+        except ArticleApp.DoesNotExist:
+            return Response('does not exist', status=status.HTTP_400_BAD_REQUEST)
+        serializer = ArticleSerializer(o, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ListArticleView(generics.ListAPIView):

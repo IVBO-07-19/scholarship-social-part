@@ -47,12 +47,12 @@ class Test(TestSetUp):
     def test_without_application(self):
         self.client.credentials(HTTP_AUTHORIZATION=self.ADMIN)
         data = {
-            'title': 'string',
-            'work': 'string',
-            'responsible': 'string',
-            'is_organizer': True,
-            'is_co_organizer': False,
-            'is_assistant': False,
+            'title': 'cool work',
+            'work': 'yes',
+            'responsible': 'Zuev',
+            'is_organizer': '',
+            'is_co_organizer': '',
+            'is_assistant': True,
             'date': '2021-01-01'
         }
         response = self.client.post(self.route, data)
