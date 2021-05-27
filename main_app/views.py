@@ -2,7 +2,6 @@ import datetime
 import json
 
 import requests
-from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -138,6 +137,13 @@ class RateOneTimeView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class OnetimeByAppIDView(APIView):
+    def get(self, request, pk):
+        o = OneTimeParticipationApp.objects.filter(report__central_service_id=pk, owner=request.user)
+        serializer = OneTimeParticipationSerializer(o, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateSystematicView(APIView):
     '''
     DELETE
@@ -253,6 +259,13 @@ class RateSystematicView(APIView):
             return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = SystematicSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SystematicByAppIDView(APIView):
+    def get(self, request, pk):
+        o = SystematicApp.objects.filter(report__central_service_id=pk, owner=request.user)
+        serializer = SystematicSerializer(o, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -373,6 +386,13 @@ class RateVolunteerView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class VolunteerByAppIDView(APIView):
+    def get(self, request, pk):
+        o = VolunteerApp.objects.filter(report__central_service_id=pk, owner=request.user)
+        serializer = VolunteerSerializer(o, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CreateInformationSupportView(APIView):
     '''
     DELETE
@@ -476,6 +496,13 @@ class RateInformationSupportView(APIView):
             return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = InformationSupportSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class InformationSupportByAppIDView(APIView):
+    def get(self, request, pk):
+        o = InformationSupportApp.objects.filter(report__central_service_id=pk, owner=request.user)
+        serializer = InformationSupportSerializer(o, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -588,4 +615,11 @@ class RateArticleView(APIView):
             return Response('wrong address', status=status.HTTP_400_BAD_REQUEST)
         a.save()
         serializer = ArticleSerializer(a, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ArticleByAppIDView(APIView):
+    def get(self, request, pk):
+        o = ArticleApp.objects.filter(report__central_service_id=pk, owner=request.user)
+        serializer = ArticleSerializer(o, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
